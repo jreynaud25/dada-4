@@ -246,7 +246,7 @@
         opacity: 0;
         transition-delay: 1.4s;
       }
-    
+      
       @media (max-width: 768px) {
       /* Mobile-specific styles */
       .face {
@@ -258,8 +258,25 @@
       }
 
     }
-      
-    </style>
+    .image-stack img {
+  image-rendering: auto; /* Maintain smooth scaling */
+  backface-visibility: hidden; /* Force hardware acceleration for smoother scaling */
+  transform-origin: center center; /* Ensure the scaling happens from the center */
+  will-change: transform; /* Inform the browser that scaling will happen */
+}
+
+/* Example for Safari-specific targeting */
+@media not all and (min-resolution:.001dpcm) {
+  @supports (-webkit-appearance:none) {
+    .image-stack img {
+      /* Safari-specific improvements */
+      backface-visibility: hidden; /* Safari requires this for smoother scaling */
+      transform-origin: center center;
+      will-change: transform;
+    }
+  }
+}
+      </style>
   </head>
   <body>
     <header><span>DADA</span><span>INFO</span></header>
@@ -480,6 +497,8 @@ function stackMediaOnLoad() {
       mediaElement.autoplay = true;
       mediaElement.loop = true;
       mediaElement.muted = true;
+      mediaElement.playsInline = true; // This ensures the video plays inline on mobile devices
+
     } else {
       mediaElement = document.createElement("img");
       mediaElement.src = mediaUrl;
