@@ -374,7 +374,7 @@ let highestZIndex = 1000;
 
 const MAX_WIDTH = 400;
 const MAX_HEIGHT = 300;
-const INITIAL_STACK_WIDTH = 80;
+const INITIAL_STACK_WIDTH = 100;
 const STACK_OFFSET = 15;
 
 let throwIsDone = false;
@@ -441,7 +441,7 @@ function removeImage(mediaDivs) {
 
 function throwMedia(mediaDiv, clickEvent) {
   const randomAngle = Math.random() * 10 - 5;
-  const scaleFactor = Math.random() * (10 - 8) + 8;
+  const scaleFactor = Math.random() * (5 - 4.5) + 4.5;
   const offset = 30;
   const endPosX = clickEvent.clientX - mediaDiv.clientWidth / 2 - offset;
   const endPosY = clickEvent.clientY - mediaDiv.clientHeight / 2 - offset;
