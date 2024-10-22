@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>DADA 3 with GUI</title>
+  <style>
+    /* Existing CSS remains unchanged */
+    body {
+      font-family: "GTFAdieu Black", sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      margin: 0;
+      background-color: black;
+      flex-direction: column;
+    }
+
+    /* Control Panel GUI */
+    .control-panel {
+      position: fixed;
+      bottom: 1rem;
+      left: 1rem;
+      z-index: 10000000000;
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      color: white;
+      font-family: "GTFEkstra Medium";
+    }
+
+    .control-panel label {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .control-panel input {
+      width: 100%;
+      padding: 0.5rem;
+      margin-bottom: 1rem;
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      font-family: "GTFEkstra Medium";
+      font-size: 1rem;
+      border-radius: 0.25rem;
+    }
+
+    .control-panel button {
+      padding: 0.5rem 1rem;
+      background-color: #00aaff;
+      border: none;
+      border-radius: 0.25rem;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      font-family: "GTFEkstra Medium";
+    }
+
+    .scene {
+      /* Existing styles */
+    }
+
+    /* Additional styles for the cube and media throwing */
+  </style>
+</head>
+<body>
+  <header><span>DADA</span><span>INFO</span></header>
+  
+  <!-- Control Panel (GUI) -->
+  <div class="control-panel">
+    <label for="transitionDuration">Transition Duration (seconds):</label>
+    <input type="number" id="transitionDuration" value="1.5" step="0.1" />
+
+    <label for="stackOffset">Stack Offset (pixels):</label>
+    <input type="number" id="stackOffset" value="15" step="1" />
+
+    <button id="restartAnimation">Restart Animation</button>
+    <button id="removeImages">Remove Images</button>
+  </div>
+
+  <div class="next-button">
+    <span>
+      NEXT STORIES
+    </span>
+  </div>
+
+  <div class="scene">
+    <div class="cube">
+      <div class="face active">A NIGHT OUT</div>
+      <div class="face">A NEW BUILDING</div>
+      <div class="face">A BEAUTIFUL HOME</div>
+      <div class="face">A NEW LOOK</div>
+    </div>
+  </div>
+
+  <script>
+    const mediaDatasets = {
+      "A NIGHT OUT": [
+        "./a-night-out-img/02.mp4",
+        "./a-night-out-img/02.png",
+        "./a-night-out-img/03.png",
+        "./a-night-out-img/04.png",
+        "./a-night-out-img/05.png",
+        "./a-night-out-img/06.png",
+        "./a-night-out-img/07.png",
+        "./a-night-out-img/08.png",
+        "./a-night-out-img/46.png",
+        "./a-night-out-img/09.png",
+        "./a-night-out-img/10.png",
+        "./a-night-out-img/11.png",
+        "./a-night-out-img/12.png",
+        "./a-night-out-img/14.png",
+        "./a-night-out-img/15.png",
+      ],
+      "A NEW BUILDING": [
+        "./a-new-building-img/1.png",
+        "./a-new-building-img/2.png",
+        "./a-new-building-img/8.mp4",
+        "./a-new-building-img/3.png",
+        "./a-new-building-img/4.png",
+        "./a-new-building-img/6.png",
+        "./a-new-building-img/7.mp4",
+      ],
+      "A BEAUTIFUL HOME": [
+        "./a-beautiful-home-img/01.jpg",
+        "./a-beautiful-home-img/02.jpg",
+        "./a-beautiful-home-img/03.jpg",
+        "./a-beautiful-home-img/04.jpg",
+        "./a-beautiful-home-img/05.jpg",
+        "./a-beautiful-home-img/06.jpg",
+        "./a-beautiful-home-img/07.jpg",
+        "./a-beautiful-home-img/08.jpg",
+        "./a-beautiful-home-img/09.jpg",
+        "./a-beautiful-home-img/10.mp4",
+      ],
+      "A NEW LOOK": [
+        "./a-new-look-img/01.png",
+        "./a-new-look-img/02.png",
+        "./a-new-look-img/03.png",
+        "./a-new-look-img/04.png",
+      ],
+    };
+
+    let availableMedia = [];
+    let thrownMediaCount = 0;
+    let highestZIndex = 1000;
+    const MAX_WIDTH = 400;
+    const MAX_HEIGHT = 300;
+    const INITIAL_STACK_WIDTH = 50;
+    let STACK_OFFSET = 15; // This will be dynamically updated
+    let TRANSITION_DURATION = 1.5; // This will be dynamically updated
+
+    let throwIsDone = false;
+
+    // Function to update transition duration and offset
+    function updateSettings() {
+      TRANSITION_DURATION = parseFloat(document.getElementById('transitionDuration').value);
+      STACK_OFFSET = parseInt(document.getElementById('stackOffset').value, 10);
+    }
+
+    // Function to restart the animation
+    function restartAnimation() {
+      document.querySelectorAll('.image-stack').forEach(div => {
+        div.remove();
+      });
+      thrownMediaCount = 0;
+      throwIsDone = false;
+      startThrowingAndStacking(mediaDatasets["A NIGHT OUT"]);
+    }
+
+    // Function to remove all images
+    function removeImages() {
+      document.querySelectorAll('.image-stack').forEach(div => {
+        div.style.transform = "scale(0)";
+      });
+    }
+
+    // Event listeners for the buttons
+    document.getElementById('restartAnimation').addEventListener('click', () => {
+      updateSettings();
+      restartAnimation();
+    });
+
+    document.getElementById('removeImages').addEventListener('click', () => {
+      removeImages();
+    });
+
+    // Function to update the background size of the loader based on thrown media progress
+    function updateLoaderProgress() {
+      const totalMedia = availableMedia.length;
+      const progressPercentage = (thrownMediaCount / totalMedia) * 100;
+
+      const activeLoader = document.querySelector(".face.active .loader");
+
+      if (activeLoader) {
+        activeLoader.style.backgroundSize = `${progressPercentage}% 100%`;
+      }
+
+      if (thrownMediaCount === totalMedia) {
+        throwIsDone = true;
+        setTimeout(() => {
+          activeLoader.style.backgroundSize = `100% 100%`;
+        }, 500);
+      }
+
+      if (throwIsDone) {
+        const mediaDivs = document.querySelectorAll('.image-stack');
+        removeImage(mediaDivs);
+      }
+    }
+
+    // Function to remove images
+    function removeImage(mediaDivs) {
+      const reversedMediaDivs = Array.from(mediaDivs).reverse();
+      reversedMediaDivs.forEach((mediaDiv, index) => {
+        setTimeout(() => {
+          mediaDiv.style.transform = "scale(0)";
+          mediaDiv.style.transition = `transform ${TRANSITION_DURATION}s cubic-bezier(0.25, 1, 0.5, 1)`;
+        }, index * 80);
+      });
+    }
+
+    // Function to throw media
+    function throwMedia(mediaDiv, clickEvent) {
+      const randomAngle = Math.random() * 10 - 5;
+      const scaleFactor = Math.random() * (10 - 5) + 5;
+
+      const offset = 30;
+      const endPosX = clickEvent.clientX - mediaDiv.clientWidth / 2 - offset;
+      const endPosY = clickEvent.clientY - mediaDiv.clientHeight / 2 - offset;
+
+      mediaDiv.style.zIndex = ++highestZIndex;
+      mediaDiv.style.transition = `all ${TRANSITION_DURATION}s cubic-bezier(0.25, 1, 0.5, 1)`;
+      mediaDiv.style.left = `${endPosX}px`;
+      mediaDiv.style.top = `${endPosY}px`;
+      mediaDiv.style.transform = `scale(${scaleFactor}) rotate(${randomAngle}deg)`;
+
+      mediaDiv.firstChild.style.maxWidth = `${MAX_WIDTH}px`;
+      mediaDiv.firstChild.style.maxHeight = `${MAX_HEIGHT}px`;
+      mediaDiv.classList.add("thrown");
+      thrownMediaCount++;
+
+      updateLoaderProgress();
+    }
+
+    // Function to make the media follow the mouse
+    function followMouse(mediaDiv) {
+      mediaDiv.style.zIndex = ++highestZIndex;
+      document.addEventListener("mousemove", (event) => {
+        const mouseX = event.clientX;
+        const mouseY = event.clientY;
+        if (!mediaDiv.classList.contains("thrown")) {
+          mediaDiv.style.left = `${mouseX + 10}px`;
+          mediaDiv.style.top = `${mouseY + 10}px`;
+        }
+      });
+    }
+
+    // Function to load and display the next media
+    function loadAndFollowNextMedia() {
+      const mediaDivs = Array.from(document.querySelectorAll(".image-stack"));
+      const nextMedia = mediaDivs.find((mediaDiv) => !mediaDiv.classList.contains("thrown"));
+
+      if (nextMedia) {
+        nextMedia.style.display = "block";
+        followMouse(nextMedia);
+        document.addEventListener("click", (event) => {
+          throwMedia(nextMedia, event);
+          loadAndFollowNextMedia();
+        }, { once: true });
+      }
+    }
+
+    // Function to stack media
+    function stackMediaOnLoad() {
+      if (availableMedia.length === 0) return;
+
+      availableMedia.forEach((mediaUrl, index) => {
+        const mediaDiv = document.createElement("div");
+        mediaDiv.classList.add("image-stack");
+        mediaDiv.style.position = "fixed";
+        mediaDiv.style.width = `${INITIAL_STACK_WIDTH}px`;
+        mediaDiv.style.height = "auto";
+        mediaDiv.style.left = `${window.innerWidth / 2 - INITIAL_STACK_WIDTH / 2}px`;
+        mediaDiv.style.top = `${window.innerHeight / 2 + index * STACK_OFFSET}px`;
+        mediaDiv.style.zIndex = 1000 - index;
+
+        let mediaElement;
+        if (mediaUrl.endsWith(".mp4")) {
+          mediaElement = document.createElement("video");
+          mediaElement.src = mediaUrl;
+          mediaElement.autoplay = true;
+          mediaElement.loop = true;
+          mediaElement.muted = true;
+        } else {
+          mediaElement = document.createElement("img");
+          mediaElement.src = mediaUrl;
+        }
+
+        mediaDiv.appendChild(mediaElement);
+        mediaDiv.style.display = "none";
+        document.body.appendChild(mediaDiv);
+      });
+    }
+
+    // Start the animation
+    function startThrowingAndStacking(mediaDataset) {
+      availableMedia = [...mediaDataset];
+      stackMediaOnLoad();
+      loadAndFollowNextMedia();
+    }
+
+    // Load the initial dataset and start animation
+    startThrowingAndStacking(mediaDatasets["A NIGHT OUT"]);
+  </script>
+</body>
+</html>

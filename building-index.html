@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Anime.js Font Size Animation</title>
+
+    <!-- Link to the Anime.js library from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <style>
+      body {
+        font-family: "Monument Grotesk Black";
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #adff00;
+      }
+
+      .container {
+        text-align: center;
+        width: 80vw; /* Ensure the container is 80vw */
+        white-space: nowrap; /* Prevent wrapping */
+        margin: 0 auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        width: 100vw;
+        position: fixed;
+      }
+
+      .text-wrapper {
+        font-size: 110px; /* Initial large font size */
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+      }
+
+      .image-animation {
+        height: 0vh; /* Start with 0vh height */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden; /* Ensure the image doesn't overflow */
+      }
+
+      .image-animation img {
+        height: 100%;
+        border-radius: 0.25rem;
+      }
+
+      span {
+        margin: 0 10px;
+      }
+
+      .next-button {
+        position: fixed;
+        bottom: 1rem;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1000;
+        font-size: 1.5rem;
+        display: none; /* Initially hidden */
+        background-color: rgba(255, 255, 255, 0.285);
+        backdrop-filter: blur(20px);
+        padding: 0.5rem;
+        align-items: center;
+        padding-bottom: 0.1rem;
+        padding-top: 0.2rem;
+        border-radius: 0.25rem;
+        gap: 0.25rem;
+        overflow: hidden;
+        cursor: pointer;
+      }
+
+      .load-bar {
+        position: absolute;
+        left: 0;
+        width: 0;
+        height: 100%;
+        background-color: white;
+        z-index: -1;
+      }
+
+      .next-button .heading {
+        font-size: 0.5em;
+        line-height: 106%;
+        font-family: "Monument Grotesk";
+        text-transform: uppercase;
+        margin-bottom: 0.4rem;
+        z-index: 1000;
+      }
+
+      .next-button .title {
+        text-transform: uppercase;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="text-wrapper">
+        <span class="font-size">A</span>
+        <div class="image-animation">
+          <img src="./building-img/1.png" />
+        </div>
+        <div class="image-animation">
+          <img src="./building-img/4.png" />
+        </div>
+
+        <span class="font-size">New</span>
+
+        <div class="image-animation">
+          <img src="./building-img/3.png" />
+        </div>
+        <div class="image-animation">
+          <img src="./building-img/6.png" />
+        </div>
+        <span class="font-size">Building</span>
+      </div>
+    </div>
+    <div class="next-button">
+      <div class="load-bar"></div>
+      <span class="heading">Next Up</span>
+      <span class="title">A New Look</span>
+    </div>
+
+    <script>
+      // Select all the images and the text spans
+      const images = document.querySelectorAll(".building .image-animation");
+      const textSpans = document.querySelectorAll(".building .font-size");
+
+      // Set the starting and ending font size values
+      const startFontSize = 110; // 110px at the beginning (corresponds to 8vw)
+      const endFontSize = 40; // 26px at the end
+      const nextButton = document.querySelector(".building .next-button");
+      const loadBar = document.querySelector(".building .load-bar");
+
+      // Anime.js animation for the images with a proportional font-size change
+      anime({
+        targets: images,
+        height: [
+          { value: "30vh", duration: 1000, easing: "easeInOutQuad" }, // Grow to 30vh
+          {
+            value: "10vh",
+            duration: 1000,
+            delay: anime.stagger(333),
+            easing: "easeInOutQuad",
+          }, // Shrink to 10vh
+        ],
+        delay: anime.stagger(750), // Stagger the animation so each image animates in sequence
+        update: function (anim) {
+          // Calculate the proportional font size based on animation progress
+          const progress = anim.progress / 100; // Progress from 0 to 1
+          const currentFontSize =
+            startFontSize - (startFontSize - endFontSize) * progress;
+
+          // Apply the font size to all spans
+          textSpans.forEach((span) => {
+            span.style.fontSize = `${currentFontSize}px`;
+          });
+        },
+        complete: function () {
+          // Show the next button after the animation completes
+          nextButton.style.display = "flex";
+
+          // Animate the load bar to fill over 15 seconds
+          anime({
+            targets: loadBar,
+            width: "100%",
+            duration: 15000, // 15 seconds
+            easing: "linear",
+          });
+        },
+      });
+    </script>
+  </body>
+</html>

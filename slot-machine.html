@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Slot Machine Rotation with Cube</title>
+    <style>
+      @font-face {
+        font-family: "GTFAdieu Black";
+        src: url("./fonts/GTFAdieuTRIAL-Black.otf") format("opentype");
+        font-weight: normal;
+        font-style: normal;
+      }
+
+      body {
+        font-family: "GTFAdieu Black", sans-serif;
+        display: flex;
+        overflow: hidden;
+        margin: 0;
+        background-color: black;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .scene {
+        width: 80vw;
+        height: 100vh;
+        perspective: 1000px; /* Needed for 3D effect */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .cube {
+        position: relative;
+        width: 80vw;
+        height: 100vh;
+        transform-style: preserve-3d;
+        transform: rotateX(0deg); /* Initial rotation */
+        transition: transform 1s cubic-bezier(0.25, 1, 0.5, 1);
+      }
+
+      .face {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 80px;
+        text-transform: uppercase;
+        color: white;
+        background-color: black;
+        box-sizing: border-box;
+      }
+
+      /* Positioning the cube's faces */
+      .face:nth-child(1) { transform: rotateX(0deg) translateZ(50vh); }
+      .face:nth-child(2) { transform: rotateX(90deg) translateZ(50vh); }
+      .face:nth-child(3) { transform: rotateX(180deg) translateZ(50vh); }
+      .face:nth-child(4) { transform: rotateX(-90deg) translateZ(50vh); }
+
+    </style>
+  </head>
+  <body>
+    <div class="scene">
+      <div class="cube">
+        <div class="face">A NIGHT OUT</div>
+        <div class="face">A NEW BUILDING</div>
+        <div class="face">A BEAUTIFUL HOME</div>
+        <div class="face">A NEW LOOK</div>
+      </div>
+    </div>
+
+    <script>
+      let rotationX = 0;
+
+      // Add click event listener to the scene to rotate the cube
+      document.querySelector('.scene').addEventListener('click', () => {
+        // Increment the rotation by 90 degrees on the X-axis
+        rotationX -= 90;
+
+        // Apply the rotation to the cube
+        document.querySelector('.cube').style.transform = `rotateX(${rotationX}deg)`;
+      });
+    </script>
+  </body>
+</html>
